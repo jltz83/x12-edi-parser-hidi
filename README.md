@@ -1,4 +1,4 @@
-![image](https://raw.githubusercontent.com/databricks-industry-solutions/.github/main/profile/solacc_logo_wide.png)
+
 
 [![CLOUD](https://img.shields.io/badge/CLOUD-ALL-blue?logo=googlecloud&style=for-the-badge)](https://cloud.google.com/databricks)
 [![POC](https://img.shields.io/badge/POC-10_days-green?style=for-the-badge)](https://databricks.com/try-databricks)
@@ -12,10 +12,6 @@ Working with various x12 EDI transactions in Spark on Databrick with databricksx
 - **835 (Remittance / payment on claims)**
 
 [Data dictionaries available](/doc/)
-
-### Thanks to contributions from our partners at [CitiusTech](https://www.citiustech.com/) 834 is now supported along with additional insights from 837s. 
-
-### Thanks to recommendations from our partners at [V4C](https://www.v4c.ai/) for further contributions and extending the functionality of the parser. 
 
 # Install
 
