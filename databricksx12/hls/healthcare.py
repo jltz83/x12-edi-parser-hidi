@@ -1,6 +1,7 @@
 from databricksx12.edi import *
 from databricksx12.hls import *
 import itertools
+import time
 
 
 class HealthcareManager(EDI):
@@ -10,8 +11,7 @@ class HealthcareManager(EDI):
             "221": Remittance, # Remittance "835"
             "222": Claim837p,
             "223": Claim837i,
-            "224": None, #Dental
-            "225": None #Dental
+            "224": None #Dental
     }
 
     #
@@ -59,18 +59,36 @@ class HealthcareManager(EDI):
     #
     # {k,d.get(k)} for support passing in the filename for transparency / traceability 
     #
+
     @classmethod
     def flatten_to_json(cls, d):
+
+        start = time.perf_counter()
+
+        claim_json = cls.build(
+            d['Claim'][1],
+            d['Claim'][0],
+            d['trnx'].transaction_type,
+            d['trnx'].data,
+            d['trnx'].format_cls
+        ).to_json()
+
+        build_ms = (time.perf_counter() - start) * 1000
+
         return {
-            **{k:d.get(k) for k in list(d.keys()) if k not in ['EDI', 'FunctionalGroup', 'Transaction', 'Claim', 'trnx']},
+            "debug_build_ms": build_ms,
+            "debug_transaction_type": d['trnx'].transaction_type,
+            "debug_segment_count": len(d['trnx'].data),
+            "debug_claim_idx": d['Claim'][0],
+
+            **{k:d.get(k)
+            for k in list(d.keys())
+            if k not in ['EDI', 'FunctionalGroup', 'Transaction', 'Claim', 'trnx']},
+
             **d['EDI'],
             **d['FunctionalGroup'],
             **d['Transaction'],
-            **cls.build(d['Claim'][1],
-                       d['Claim'][0],
-                       d['trnx'].transaction_type,
-                       d['trnx'].data,
-                        d['trnx'].format_cls).to_json()
+            **claim_json
         }
 
     #
