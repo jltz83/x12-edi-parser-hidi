@@ -80,7 +80,10 @@ class HealthcareManager(EDI):
             "debug_transaction_type": d['trnx'].transaction_type,
             "debug_segment_count": len(d['trnx'].data),
             "debug_claim_idx": d['Claim'][0],
-
+            "debug_clp_count": sum(
+                1 for segment in d["trnx"].data
+                if segment._name == "CLP"
+            ),
             **{k:d.get(k)
             for k in list(d.keys())
             if k not in ['EDI', 'FunctionalGroup', 'Transaction', 'Claim', 'trnx']},
