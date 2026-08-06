@@ -180,49 +180,160 @@ class ClaimBuilder(EDI):
         if self.trnx_cls.NAME in ['837I', '837P']:
             return list(self._build_837_iter())
             
-        elif self.trnx_cls.NAME == '835':
-            # Optimized: Pre-build indices for all segment types needed
-            clp_indices = [i for i, seg in self.segments_by_name_index("CLP")]
-            n1_indices = [i for i, seg in self.segments_by_name_index("N1")]
-            lx_indices = [i for i, seg in self.segments_by_name_index("LX")]
-            svc_indices = [i for i, seg in self.segments_by_name_index("SVC")]
-            se_indices = [i for i, seg in self.segments_by_name_index("SE")]
-            
-            # Pre-compute common values used by all remittances
-            n1_first = n1_indices[0] if n1_indices else len(self.data)
-            n1_second = n1_indices[1] if len(n1_indices) > 1 else len(self.data)
-            lx_first = lx_indices[0] if lx_indices else len(self.data)
-            lx_last = lx_indices[-1] if lx_indices else 0
-            clp_last = clp_indices[-1] if clp_indices else 0
-            svc_last = svc_indices[-1] if svc_indices else 0
-            
-            # Pre-build lookup for "next CLP after current index"
-            clp_indices_set = set(clp_indices)
-            
+        elif self.trnx_cls.NAME == "835":
+
+            clp_indices = [
+                i
+                for i, seg in enumerate(self.data)
+                if seg._name == "CLP"
+            ]
+
+            n1_indices = [
+                i
+                for i, seg in enumerate(self.data)
+                if seg._name == "N1"
+            ]
+
+            lx_indices = [
+                i
+                for i, seg in enumerate(self.data)
+                if seg._name == "LX"
+            ]
+
+            svc_indices = [
+                i
+                for i, seg in enumerate(self.data)
+                if seg._name == "SVC"
+            ]
+
+            se_indices = [
+                i
+                for i, seg in enumerate(self.data)
+                if seg._name == "SE"
+            ]
+
+            data_length = len(self.data)
+
+            n1_first = (
+                n1_indices[0]
+                if n1_indices
+                else data_length
+            )
+
+            n1_second = (
+                n1_indices[1]
+                if len(n1_indices) > 1
+                else data_length
+            )
+
+            first_lx = (
+                lx_indices[0]
+                if lx_indices
+                else data_length
+            )
+
+            last_lx = (
+                lx_indices[-1]
+                if lx_indices
+                else 0
+            )
+
+            last_clp = (
+                clp_indices[-1]
+                if clp_indices
+                else 0
+            )
+
+            last_svc = (
+                svc_indices[-1]
+                if svc_indices
+                else 0
+            )
+
+            summary_start = max(
+                last_lx,
+                last_clp,
+                last_svc
+            )
+
             remittances = []
-            for idx_pos, idx in enumerate(clp_indices):
-                # Find next CLP index
-                next_clp = clp_indices[idx_pos + 1] if idx_pos + 1 < len(clp_indices) else -1
-                
-                # Find next LX after current idx
-                next_lx = next((lx for lx in lx_indices if lx > idx), -1)
-                
-                # Find next SE after current idx
-                next_se = next((se for se in se_indices if se > idx), -1)
-                
-                # Calculate clm_loop end
-                clm_end = min(filter(lambda x: x > 0, [next_lx, next_clp, next_se, len(self.data)]))
-                
+
+            lx_position = 0
+            se_position = 0
+
+            for clp_position, clp_idx in enumerate(clp_indices):
+
+                while (
+                    lx_position + 1 < len(lx_indices)
+                    and lx_indices[lx_position + 1] < clp_idx
+                ):
+                    lx_position += 1
+
+                current_lx = (
+                    lx_indices[lx_position]
+                    if lx_indices
+                    else clp_idx
+                )
+
+                next_lx = (
+                    lx_indices[lx_position + 1]
+                    if lx_position + 1 < len(lx_indices)
+                    else data_length
+                )
+
+                next_clp = (
+                    clp_indices[clp_position + 1]
+                    if clp_position + 1 < len(clp_indices)
+                    else data_length
+                )
+
+                while (
+                    se_position < len(se_indices)
+                    and se_indices[se_position] <= clp_idx
+                ):
+                    se_position += 1
+
+                next_se = (
+                    se_indices[se_position]
+                    if se_position < len(se_indices)
+                    else data_length
+                )
+
+                claim_end = min(
+                    next_lx,
+                    next_clp,
+                    next_se,
+                    data_length
+                )
+
                 remittances.append(
                     self.trnx_cls(
-                        trx_header_loop=self.data[0:n1_first],
-                        payer_loop=self.data[n1_first:n1_second],
-                        payee_loop=self.data[n1_second:lx_first],
-                        clm_loop=self.data[idx:clm_end],
-                        trx_summary_loop=self.data[max(0, lx_last, clp_last, svc_last):],
-                        header_number_loop=self.data[lx_first:idx]
+                        trx_header_loop=self.data[
+                            0:n1_first
+                        ],
+
+                        payer_loop=self.data[
+                            n1_first:n1_second
+                        ],
+
+                        payee_loop=self.data[
+                            n1_second:first_lx
+                        ],
+
+                        header_number_loop=self.data[
+                            current_lx:clp_idx
+                        ],
+
+                        clm_loop=self.data[
+                            clp_idx:claim_end
+                        ],
+
+                        trx_summary_loop=self.data[
+                            summary_start:
+                        ]
                     )
                 )
+
             return remittances
             
         elif self.trnx_cls.NAME == '834':
