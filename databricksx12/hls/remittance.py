@@ -29,6 +29,7 @@ class Remittance(MedicalClaim):
         self.clm_info = self.populate_claim_loop()
         self.plb_info = self.populate_plb_loop()
         self.header_info = self.populate_header_loop()
+        self.adjustments_info = self.populate_adjustments_loop()
         self.loop_segments_info  = {
             'trx_header_loop': self._extract_segments(self.trx_header_loop),
             'payer_loop': self._extract_segments(self.payer_loop),
@@ -169,6 +170,13 @@ class Remittance(MedicalClaim):
     def populate_adjustment_groups(self, cas):
         return [{'adjustment_grp_cd': (cas.element(1) if cas.element(i) == "" else cas.element(i)), 'adjustment_reason_cd': cas.element(i+1), 'adjustment_amount': cas.element(i+2)} for i in list(range(1, cas.segment_len()-1, 3))]
 
+
+    def populate_adjustments_loop(self):
+        return self._extract_segments(
+            self.segments_by_name("CAS", data=self.clm_loop)
+        ).get("CAS", [])
+
+    
     def to_json(self):
         return {
             **{'payment': self.trx_header_info},
