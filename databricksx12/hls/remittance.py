@@ -183,6 +183,7 @@ class Remittance(MedicalClaim):
             **{'payer': self.payer_info},
             **{'payee': self.payee_info},
             **{'claim': self.clm_info},
+            **{'adjustments': self.adjustments_info},
             **{'provider_adjustments': self.plb_info},
             **{'header_info': self.header_info},
             **{'input_loop_segments': self.loop_segments_info} #the input loops
