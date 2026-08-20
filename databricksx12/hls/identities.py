@@ -43,6 +43,7 @@ class PatientIdentity(Identity):
             self.patient_relationship_cd = pat.element(1)
             self.payer_responsibility_sequence_number_code = sbr.element(1)
             self.subscriber_relationship_cd = sbr.element(2)
+            self.insurance_group_number = sbr.element(3)
             self.claim_filing_indicator_code = sbr.element(9)
             self.street = n3.element(1)
             self.city = n4.element(1)
