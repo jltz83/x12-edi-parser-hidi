@@ -538,6 +538,7 @@ class Claim837i(MedicalClaim):
                              principal_hi = self._first([x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == ("BBR")], "HI"),
                              other_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == ("BBQ")],
                              condition_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == "BG"]
+                             visit_reason_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == "APR"]
                              )
 
     def _populate_sl_loop(self, missing=""):
