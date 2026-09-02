@@ -537,7 +537,7 @@ class Claim837i(MedicalClaim):
                              amt = self.segments_by_name("AMT", data=self.claim_loop),
                              principal_hi = self._first([x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == ("BBR")], "HI"),
                              other_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == ("BBQ")],
-                             condition_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == "BG"]
+                             condition_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == "BG"],
                              visit_reason_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == "APR"]
                              )
 
