@@ -84,7 +84,7 @@ class ClaimIdentity(Identity):
             for s in condition_hi
         ]))
         # Condition codes from HI*APR segments (837I only)
-        self.condition_codes = list(itertools.chain(*[
+        self.visit_reason_codes = list(itertools.chain(*[
             [s.element(i, 1) for i in range(1, s.segment_len()) if s.element(i, 0) == "APR"]
             for s in visit_reason_hi
         ]))
