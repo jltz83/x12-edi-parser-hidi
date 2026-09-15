@@ -120,20 +120,21 @@ class ServiceLine(Identity):
             setattr(self,k,v)
 
     @staticmethod
-    def common(sv, lx, dtp, amt, lin = []):
+    def common(sv, lx, dtp, amt, lin = [], ref = []):
         return {
             "claim_line_number": lx.element(1),
             "service_dates": [{'date_cd': s.element(1), 'date_format': s.element(2), 'date': s.element(3)} for s in dtp],
             'other_amts': [{'amt_qualifier_cd': a.element(1), 'amt': a.element(2)} for a in amt],
-            'line_item_identifiers': [{'line_item_code_qualifier': l.element(2), 'line_item_value': l.element(3)} for l in lin] #uncommon in 837s but do occur
+            'line_item_identifiers': [{'line_item_code_qualifier': l.element(2), 'line_item_value': l.element(3)} for l in lin], #uncommon in 837s but do occur
+            'line_refs': [{'id_code_qualifier': x.element(1), 'id': x.element(2)} for x in ref]
         }
 
     #
     # Institutional Claims
     #
     @classmethod
-    def from_sv2(cls, sv2, lx, dtp, amt, lin):
-        return cls({**cls.common(sv2, lx, dtp,amt, lin),
+    def from_sv2(cls, sv2, lx, dtp, amt, lin, ref=[]):
+        return cls({**cls.common(sv2, lx, dtp,amt, lin, ref),
                     **{
                         "units": sv2.element(5),
                         "units_measurement": sv2.element(4),
@@ -150,8 +151,8 @@ class ServiceLine(Identity):
     # Professional Claims
     #
     @classmethod
-    def from_sv1(cls, sv1, lx, dtp, amt, lin):
-        return cls({**cls.common(sv1, lx, dtp, amt, lin),
+    def from_sv1(cls, sv1, lx, dtp, amt, lin, ref=[]):
+        return cls({**cls.common(sv1, lx, dtp, amt, lin, ref),
                     **{
                         "units": sv1.element(4),
                         "units_measurement": sv1.element(3),
