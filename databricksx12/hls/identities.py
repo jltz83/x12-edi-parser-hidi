@@ -60,7 +60,8 @@ class ClaimIdentity(Identity):
     # clm, cl1 are individual segments
     # dtp is a loop of 0 or more dates 
     #
-    def __init__(self, clm, dtp, cl1 = Segment.empty(), k3 = Segment.empty(), hi = Segment.empty(), ref = [], amt = [],  principal_hi = Segment.empty(), other_hi = [], condition_hi = [], visit_reason_hi = []):
+    def __init__(self, clm, dtp, cl1 = Segment.empty(), k3 = Segment.empty(), hi = Segment.empty(), ref = [], amt = [],  principal_hi = Segment.empty(), other_hi = [], 
+                 condition_hi = [], visit_reason_hi = [], bht = Segment.empty()):
         self.claim_id = clm.element(1)
         self.claim_amount = clm.element(2)
         self.facility_type_code = clm.element(5)
@@ -88,6 +89,13 @@ class ClaimIdentity(Identity):
             [s.element(i, 1) for i in range(1, s.segment_len()) if s.element(i, 0) == "APR"]
             for s in visit_reason_hi
         ]))
+        # Transaction-level, from BHT (beginning of hierarchical transaction).
+        # Shared by every claim in the same ST..SE.
+        self.transaction_created_date = bht.element(4)   
+        self.transaction_created_time = bht.element(5)   
+        self.transaction_purpose_cd   = bht.element(2)   
+        self.transaction_ref_id       = bht.element(3)
+        self.claim_or_encounter_cd    = bht.element(6)   
 
 # POA is the last sub element of the respective segments
 class DiagnosisIdentity(Identity):

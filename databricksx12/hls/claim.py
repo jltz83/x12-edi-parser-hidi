@@ -435,11 +435,10 @@ class MedicalClaim(EDI):
                              dtp = self.segments_by_name("DTP", data=self.claim_loop),
                              k3 = self._first(self.claim_loop, "K3"),
                              ref = self.segments_by_name("REF", data=self.claim_loop[:(len(self.claim_loop)-1 if (temp := [i for i, x in enumerate(self.claim_loop) if x._name == "NM1"]) == [] else temp[0]) ]), #ref up until loop 2310
-                             amt = self.segments_by_name("AMT", data=self.claim_loop)) #ref up until loop 2310
+                             amt = self.segments_by_name("AMT", data=self.claim_loop), #ref up until loop 2310
+                             bht = self._first(self.sender_receiver_loop, "BHT"))
 
                              
-    
-
     def _populate_payer_info(self):
         return PayerIdentity(self._first([x for x in self.subscriber_loop if x.element(1) == "PR"], "NM1"))
     
@@ -538,7 +537,8 @@ class Claim837i(MedicalClaim):
                              principal_hi = self._first([x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == ("BBR")], "HI"),
                              other_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == ("BBQ")],
                              condition_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == "BG"],
-                             visit_reason_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == "APR"]
+                             visit_reason_hi = [x for x in self.claim_loop if x._name == "HI" and x.element(1,0) == "APR"],
+                             bht = self._first(self.sender_receiver_loop, "BHT")
                              )
 
     def _populate_sl_loop(self, missing=""):
